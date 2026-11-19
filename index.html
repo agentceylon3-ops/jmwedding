@@ -127,7 +127,7 @@
             font-weight: normal;
         }
 
-        #hearts-container {
+        #roses-container {
             position: absolute;
             top: 0;
             left: 0;
@@ -138,21 +138,26 @@
             overflow: hidden;
         }
 
-        .falling-heart {
+        .falling-rose {
             position: absolute;
             top: -10vh;
             color: #ff1e42; 
-            opacity: 0.3; 
+            opacity: 0.45; 
             animation: fall linear infinite;
+            user-select: none;
         }
 
         @keyframes fall {
             0% {
-                transform: translateY(0) rotate(0deg);
-                opacity: 0.3;
+                transform: translateY(0) translateX(0) rotate(0deg);
+                opacity: 0.45;
+            }
+            50% {
+                transform: translateY(55vh) translateX(18px) rotate(180deg);
+                opacity: 0.4;
             }
             100% {
-                transform: translateY(110vh) rotate(360deg); 
+                transform: translateY(110vh) translateX(-12px) rotate(360deg); 
                 opacity: 0; 
             }
         }
@@ -298,7 +303,7 @@
     </div>
 </div>
 
-    <div id="hearts-container"></div>
+    <div id="roses-container"></div>
 
     <div id="page1" class="page">
         <div class="header">
@@ -325,7 +330,7 @@
         <video id="promo-video" playsinline preload="metadata">
     <source src="transition.mp4" type="video/mp4">
 </video>
-        <button id="skip-btn" onclick="goToNextPage()">View Invitation &rarr;</button>
+        <button id="skip-btn" onclick="goToNextPage()">View Invitation →</button>
     </div>
 
     
@@ -480,29 +485,30 @@
 
         promoVideo.addEventListener('ended', goToNextPage);
 
-        function createFallingHearts() {
-            const heartsContainer = document.getElementById('hearts-container');
+        function createFallingRoses() {
+            const rosesContainer = document.getElementById('roses-container');
+            const roseSymbols = ['🌹', '✿', '❀'];
             
-            function createHeart() {
-                const heart = document.createElement('div');
-                heart.classList.add('falling-heart');
-                heart.innerHTML = '&#10084;'; 
+            function createRose() {
+                const rose = document.createElement('div');
+                rose.classList.add('falling-rose');
+                rose.innerHTML = roseSymbols[Math.floor(Math.random() * roseSymbols.length)];
                 
-                heart.style.left = Math.random() * 100 + 'vw';
-                heart.style.fontSize = (Math.random() * 10 + 10) + 'px';
-                heart.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                rose.style.left = Math.random() * 100 + 'vw';
+                rose.style.fontSize = (Math.random() * 12 + 12) + 'px';
+                rose.style.animationDuration = (Math.random() * 4 + 5) + 's';
                 
-                heartsContainer.appendChild(heart);
+                rosesContainer.appendChild(rose);
                 
                 setTimeout(() => {
-                    heart.remove();
-                }, 8000); 
+                    rose.remove();
+                }, 9000); 
             }
 
-            setInterval(createHeart, 400);
+            setInterval(createRose, 400);
         }
 
-        createFallingHearts();
+        createFallingRoses();
 
 
 
