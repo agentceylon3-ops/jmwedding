@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>J&M wedding</title>
+    
+    <style>
+        /* Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;500&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Montserrat', sans-serif;
+            background-color: #0d0204;
+            overflow: hidden; 
+        }
+
+        body {
+            background-image: radial-gradient(circle at center, #2b060d 0%, #0a0103 100%);
+        }
+
+        .page {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5vh 20px;
+            box-sizing: border-box;
+        }
+
+        .header {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .header h1 {
+            font-family: 'Great Vibes', cursive;
+            font-size: 3.5rem;
+            color: #e61938; 
+            margin: 0;
+            font-weight: normal;
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            color: #d4b8bc;
+            letter-spacing: 3px;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+
+        .scratch-container {
+            position: relative;
+            width: 100%;
+            max-width: 320px; 
+            aspect-ratio: 1 / 1; 
+            margin: auto;
+            transition: transform 1.5s ease-in-out, filter 1.5s ease-in-out, opacity 1.5s ease-in-out;
+        }
+
+        .scratch-container.zoom-blur {
+            transform: scale(2.5);
+            filter: blur(15px);
+            opacity: 0;
+        }
+
+        .revealed-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 26 26" fill="none" stroke="%23e61938" stroke-width="1.2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>');
+            background-size: 95%; 
+            background-position: center 55%;
+            background-repeat: no-repeat;
+            text-align: center;
+            z-index: 1;
+        }
+
+        .revealed-content p {
+            font-size: clamp(0.8rem, 4vw, 0.95rem); 
+            color: #e0c8cc;
+            margin: 5px 0;
+            line-height: 1.4;
+        }
+
+        .revealed-content h2 {
+            font-size: clamp(1.2rem, 6vw, 1.6rem);
+            color: #ffffff;
+            margin: 10px 0 0 0;
+            font-weight: 500;
+        }
+
+        #scratch-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            cursor: pointer;
+        }
+
+        .footer {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .footer h2 {
+            font-family: 'Great Vibes', cursive;
+            font-size: 3rem;
+            color: #e61938;
+            margin: 0;
+            font-weight: normal;
+        }
+
+        #hearts-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; 
+            z-index: 0; 
+            overflow: hidden;
+        }
+
+        .falling-heart {
+            position: absolute;
+            top: -10vh;
+            color: #ff1e42; 
+            opacity: 0.3; 
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0.3;
+            }
+            100% {
+                transform: translateY(110vh) rotate(360deg); 
+                opacity: 0; 
+            }
+        }
+
+        #video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        #video-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #promo-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; 
+        }
+
+        #skip-btn {
+            position: absolute;
+            bottom: 35px;
+            right: 20px;
+            padding: 12px 22px;
+            background: rgba(180, 15, 40, 0.35);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: #ffffff;
+            border: 1px solid rgba(255, 60, 90, 0.5);
+            border-radius: 30px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            cursor: pointer;
+            z-index: 10000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        #skip-btn:active {
+            transform: scale(0.95);
+            background: rgba(230, 25, 56, 0.5);
+        }
+
+
+        /*loading animation*/
+        /* Preloader එක මුළු තිරයම වහගෙන තියෙන්න හදනවා */
+#wedding-preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #0a0103; /* කළු පාට පසුබිම */
+    z-index: 99999; /* අනිත් හැමදේටම වඩා උඩින් තියෙන්න */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.6s ease-out, visibility 0.6s ease-out; /* අයින් වෙද්දී ලස්සනට fade වෙලා යන්න */
+}
+
+.loader-content {
+    text-align: center;
+}
+
+/* ගැහෙන හදවතේ ඩිසයින් එක */
+.heart-loader {
+    background-color: #e61938; /* තද රතු පාට */
+    width: 40px;
+    height: 40px;
+    position: relative;
+    margin: 0 auto 20px;
+    transform: rotate(45deg);
+    animation: heartPulse 1.2s infinite; /* ඇනිමේෂන් එක */
+}
+
+.heart-loader::before,
+.heart-loader::after {
+    content: "";
+    background-color: #e61938; /* උඩ දුන්න පාටම දෙන්න */
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    position: absolute;
+}
+
+.heart-loader::before {
+    top: -20px;
+    left: 0;
+}
+
+.heart-loader::after {
+    top: 0;
+    left: -20px;
+}
+
+/* Loading අකුරු වල ඩිසයින් එක */
+.loader-content p {
+    color: #ff4d6d;
+    font-size: 18px;
+    letter-spacing: 2px;
+    margin-top: 15px;
+    animation: textFade 1.5s infinite;
+}
+
+/* හදවත ගැහෙන Animation එක */
+@keyframes heartPulse {
+    0% { transform: rotate(45deg) scale(0.8); }
+    5% { transform: rotate(45deg) scale(0.9); }
+    10% { transform: rotate(45deg) scale(0.8); }
+    15% { transform: rotate(45deg) scale(1); }
+    50% { transform: rotate(45deg) scale(0.8); }
+    100% { transform: rotate(45deg) scale(0.8); }
+}
+
+/* අකුරු නිවී නිවී පත්තුවෙන Animation එක */
+@keyframes textFade {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+    </style>
+</head>
+<body>
+    <!-- Wedding Preloader -->
+<div id="wedding-preloader">
+    <div class="loader-content">
+        <div class="heart-loader"></div>
+        <p>Loading...</p>
+    </div>
+</div>
+
+    <div id="hearts-container"></div>
+
+    <div id="page1" class="page">
+        <div class="header">
+            <h1>Save the date</h1>
+            <p>SCRATCH THE HEART</p>
+        </div>
+        
+        <div class="scratch-container" id="scratch-container">
+            <div class="revealed-content">
+                <div>
+                    <p style="font-size: 20px;"><b> අපේ මගුල් ගෙදර<br> ඇවිත් යන්න එන්න  </b> </p>
+                    <h2>13.12.26</h2>
+                </div>
+            </div>
+            <canvas id="scratch-canvas"></canvas>
+        </div>
+
+        <div class="footer">
+            <h2>Janitha & Madara</h2>
+        </div>
+    </div>
+
+    <div id="video-overlay">
+        <video id="promo-video" playsinline preload="metadata">
+    <source src="transition.mp4" type="video/mp4">
+</video>
+        <button id="skip-btn" onclick="goToNextPage()">View Invitation &rarr;</button>
+    </div>
+
+    
+
+<script>
+  // index.html එකට ආපු ගමන් auto flag එක set වෙනවා
+  sessionStorage.setItem('visitedFromIndex', 'true');
+</script>
+
+    <script>
+        const canvas = document.getElementById('scratch-canvas');
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('scratch-container');
+        const videoOverlay = document.getElementById('video-overlay');
+        const promoVideo = document.getElementById('promo-video');
+
+        canvas.width = 320;
+        canvas.height = 320;
+
+        let isDrawing = false;
+        let animationTriggered = false;
+        let isNavigating = false; // මේක අලුතෙන් දැම්මා redirect එක දෙපාරක් වෙන එක නවත්තන්න
+
+        const gridSize = 20;
+        const grid = new Array(gridSize * gridSize).fill(false);
+        let scratchedCells = 0;
+
+        const img = new Image();
+        img.src = '3d-heart.png'; 
+
+        img.onload = () => {
+            ctx.drawImage(img, 15, 15, 290, 290); 
+        };
+
+        img.onerror = () => {
+            drawFallbackHeart();
+        };
+
+        function drawFallbackHeart() {
+            ctx.fillStyle = '#c58b7e'; 
+            ctx.beginPath();
+            ctx.moveTo(160, 80);
+            ctx.bezierCurveTo(160, 75, 145, 50, 100, 50);
+            ctx.bezierCurveTo(40, 50, 40, 112.5, 40, 112.5);
+            ctx.bezierCurveTo(40, 160, 90, 200, 160, 260);
+            ctx.bezierCurveTo(230, 200, 280, 160, 280, 112.5);
+            ctx.bezierCurveTo(280, 112.5, 280, 50, 220, 50);
+            ctx.bezierCurveTo(175, 50, 160, 75, 160, 80);
+            ctx.fill();
+
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "14px Montserrat";
+            ctx.textAlign = "center";
+            ctx.fillText("Add '3d-heart.png' here", 160, 150);
+        }
+
+        function getPos(canvas, evt) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = evt.clientX || (evt.touches && evt.touches[0].clientX);
+            const clientY = evt.clientY || (evt.touches && evt.touches[0].clientY);
+            
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            scratch(e);
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+            checkPercentage();
+        }
+
+        function scratch(e) {
+            if (!isDrawing) return;
+            e.preventDefault(); 
+            const pos = getPos(canvas, e);
+            
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 30, 0, Math.PI * 2); 
+            ctx.fill();
+
+            const cellX = Math.floor((pos.x / canvas.width) * gridSize);
+            const cellY = Math.floor((pos.y / canvas.height) * gridSize);
+
+            for (let i = -1; i <= 1; i++) {
+                for (let j = -1; j <= 1; j++) {
+                    const cx = cellX + i;
+                    const cy = cellY + j;
+                    if (cx >= 0 && cx < gridSize && cy >= 0 && cy < gridSize) {
+                        const idx = cy * gridSize + cx;
+                        if (!grid[idx]) {
+                            grid[idx] = true;
+                            scratchedCells++;
+                        }
+                    }
+                }
+            }
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', scratch);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseleave', stopDrawing);
+
+        canvas.addEventListener('touchstart', startDrawing, {passive: false});
+        canvas.addEventListener('touchmove', scratch, {passive: false});
+        canvas.addEventListener('touchend', stopDrawing);
+
+        function checkPercentage() {
+            if (animationTriggered) return;
+            
+            const totalCells = gridSize * gridSize;
+            const percentage = (scratchedCells / totalCells) * 100;
+            
+            if (percentage > 45) { 
+                triggerAnimation();
+            }
+        }
+
+        function goToNextPage() {
+            if (isNavigating) return; // දැනටමත් load වෙනවා නම් ආයේ run වෙන්න දෙන්න එපා
+            isNavigating = true;
+            sessionStorage.setItem('allowAccess', 'true');
+            window.location.href = '2.html';
+        }
+
+        function triggerAnimation() {
+            animationTriggered = true;
+            container.classList.add('zoom-blur');
+            
+            setTimeout(() => {
+                videoOverlay.classList.add('active');
+                
+                const playPromise = promoVideo.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("Autoplay prevented:", error);
+                        goToNextPage();
+                    });
+                }
+            }, 1500);
+        }
+
+        promoVideo.addEventListener('ended', goToNextPage);
+
+        function createFallingHearts() {
+            const heartsContainer = document.getElementById('hearts-container');
+            
+            function createHeart() {
+                const heart = document.createElement('div');
+                heart.classList.add('falling-heart');
+                heart.innerHTML = '&#10084;'; 
+                
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.fontSize = (Math.random() * 10 + 10) + 'px';
+                heart.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                
+                heartsContainer.appendChild(heart);
+                
+                setTimeout(() => {
+                    heart.remove();
+                }, 8000); 
+            }
+
+            setInterval(createHeart, 400);
+        }
+
+        createFallingHearts();
+
+
+
+        //link eka sv karamu
+        // 1. URL eken 'name' kiyana parameter eka gannawa
+   // URL එකේ තියෙන දේවල් කියවන්න එක පාරක් urlParams හැදුවම ඇති
+const urlParams = new URLSearchParams(window.location.search);
+
+// 1. නම (name) අරගෙන sessionStorage එකේ සේව් කරනවා
+const guestName = urlParams.get('name'); 
+if (guestName) {
+    sessionStorage.setItem('guestInvitationName', guestName);
+}
+
+// 2. මැසේජ් එකේ වර්ගය (type) අරගෙන sessionStorage එකේ සේව් කරනවා
+const guestType = urlParams.get('type');
+if (guestType) {
+    sessionStorage.setItem('weddingGuestType', guestType);
+}
+
+    //loading animation
+    // පේජ් එක සම්පූර්ණයෙන්ම ලෝඩ් වුණාට පස්සේ මේක රන් වෙනවා
+window.addEventListener('load', function() {
+    const preloader = document.getElementById('wedding-preloader');
+    
+    if (preloader) {
+        // Preloader එක ලස්සනට fade වෙලා යන්න opacity 0 කරනවා
+        preloader.style.opacity = '0';
+        preloader.style.visibility = 'hidden';
+        
+        // Fade වෙන වෙලාව (තත්පර 0.6) ගියාට පස්සේ ඒක සම්පූර්ණයෙන්ම අයින් කරලා දානවා
+        setTimeout(() => {
+            preloader.style.display = 'none';
+        }, 600);
+    }
+});
+    
+    </script>
+    
+</body>
+</html>
